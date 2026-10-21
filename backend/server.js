@@ -37,7 +37,8 @@ app.use(
       if (
         allowedOrigins.includes(origin) ||
         origin.endsWith('.vercel.app') ||
-        origin.endsWith('.pages.dev')
+        origin.endsWith('.pages.dev') ||
+        origin.endsWith('.workers.dev')
       ) {
         return callback(null, true);
       }
