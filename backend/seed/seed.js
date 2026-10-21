@@ -27,29 +27,25 @@ const seedData = async () => {
     // Initialize Counter to 1000 so tickets begin at TKT-1001
     await Counter.create({ _id: 'ticketId', seq: 1000 });
 
-    // 1. Create Users
-    const salt = await bcrypt.genSalt(10);
-    const supportPassword = await bcrypt.hash('support123', salt);
-    const customerPassword = await bcrypt.hash('customer123', salt);
-
+    // 1. Create Users (User pre-save hook automatically hashes password once)
     const supportUser = await User.create({
       name: 'Support Admin',
       email: 'support@helpdesk.com',
-      password: supportPassword,
+      password: 'support123',
       role: 'support',
     });
 
     const customer1 = await User.create({
       name: 'Rahul Sharma',
       email: 'rahul@gmail.com',
-      password: customerPassword,
+      password: 'customer123',
       role: 'customer',
     });
 
     const customer2 = await User.create({
       name: 'Priya Patel',
       email: 'priya@gmail.com',
-      password: customerPassword,
+      password: 'customer123',
       role: 'customer',
     });
 
