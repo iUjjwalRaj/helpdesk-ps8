@@ -48,8 +48,30 @@ app.use(
 app.use(express.json());
 
 // Basic Health Check Route
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Helpdesk API is running' });
+app.get('/api/health', async (req, res) => {
+  let egressIp = 'unknown';
+  try {
+    const ipRes = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(3000) });
+    const ipData = await ipRes.json();
+    egressIp = ipData.ip;
+  } catch (e) {
+    egressIp = 'unavailable';
+  }
+
+  const isConnected = mongoose.connection.readyState === 1;
+  const isAtlas = (process.env.MONGO_URI || '').includes('mongodb.net');
+  const jwtLen = (process.env.JWT_SECRET || '').length;
+
+  res.json({
+    status: 'ok',
+    message: 'Helpdesk API is running',
+    database: isConnected ? 'connected' : 'disconnected',
+    isAtlasTarget: isAtlas,
+    nodeEnv: process.env.NODE_ENV || 'development',
+    jwtConfigured: jwtLen >= 32,
+    jwtLength: jwtLen,
+    egressIp: egressIp
+  });
 });
 
 // Mount Routes
