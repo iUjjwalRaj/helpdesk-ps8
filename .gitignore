@@ -5,4 +5,5 @@ dist
 dump/
 backup/
 *.dump
+.wrangler/
 
