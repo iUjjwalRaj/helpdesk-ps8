@@ -22,6 +22,9 @@ app.get('/api/health', (req, res) => {
 
 // Mount Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/departments', require('./routes/departmentRoutes'));
+app.use('/api/tickets', require('./routes/ticketRoutes'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
 // 404 Handler for undefined routes
 app.use((req, res, next) => {
