@@ -3,16 +3,48 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
-// Load environment variables
-dotenv.config();
+const path = require('path');
+
+// Load environment variables reliably from backend directory
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 // Connect to MongoDB
 connectDB();
 
 const app = express();
 
-// Core Middleware
-app.use(cors());
+// Production CORS Allowlist
+const allowedOrigins = [
+  'https://help.ujjwalraj.online',
+  'https://help.feminismindia.com',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5001',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5001',
+];
+
+if (process.env.CLIENT_URL) {
+  allowedOrigins.push(process.env.CLIENT_URL);
+}
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.pages.dev')
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Basic Health Check Route
@@ -31,11 +63,14 @@ app.use((req, res, next) => {
   res.status(404).json({ message: `Route not found: ${req.originalUrl}` });
 });
 
-// Global Error Handler
+// Global Error Handler (Sanitized for production)
 app.use((err, req, res, next) => {
-  console.error('Unhandled Server Error:', err.stack);
-  res.status(500).json({
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('Server Error:', err.message);
+  }
+  res.status(err.status || 500).json({
     message: err.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' ? { stack: err.stack } : {}),
   });
 });
 
